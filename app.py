@@ -243,7 +243,7 @@ def quick_ask_fn(message: str, history: list):
     if rewritten.strip() != message.strip():
         done += f"\n🔎 实际检索问题：{rewritten}"
     yield new_history + [{"role": "assistant", "content": partial}], \
-        done, sources_panel_html(sources)
+        done, sources_panel_html(sources), ""
 
 
 def research_fn(message: str, history: list):
