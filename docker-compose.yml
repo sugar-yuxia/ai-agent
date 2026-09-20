@@ -1,0 +1,25 @@
+services:
+  ai-agent:
+    build: .
+    container_name: ai-agent
+    ports:
+      - "7860:7860"
+    # 从宿主机 .env 文件加载 DEEPSEEK_API_KEY
+    env_file:
+      - .env
+    # 持久化卷：模型缓存 / 向量索引 / trace 日志
+    # 首次启动前需在宿主机手动准备好 models/ 和 faiss_index/ 目录
+    # 没有也没关系，容器启动时会自动创建，但首次冷启动会需要联网下载模型
+    volumes:
+      - ./models:/app/models
+      - ./faiss_index:/app/faiss_index
+      - ./runs:/app/runs
+      - ./docs:/app/docs
+    # 健康检查：每 30s 探测一次 /api/ask，连续 3 次失败重启
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7860/api/ask', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped

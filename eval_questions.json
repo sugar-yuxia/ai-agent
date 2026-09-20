@@ -1,0 +1,212 @@
+[
+  {
+    "id": 1,
+    "question": "AdaPose 主要解决什么问题？",
+    "expected_sources": ["AdaPose"],
+    "expected_keywords": ["跨站点|cross-site", "无设备|device-free", "姿态估计|pose estimation", "域偏移|domain shift|domain"]
+  },
+  {
+    "id": 2,
+    "question": "AdaPose 中映射一致性损失（mapping consistency loss）的作用是什么？",
+    "expected_sources": ["AdaPose"],
+    "expected_keywords": ["映射一致性|mapping consistency", "域不变|domain-invariant|泛化|generaliz|对齐|align"]
+  },
+  {
+    "id": 3,
+    "question": "AdaPose 在无监督和弱监督场景下表现如何？",
+    "expected_sources": ["AdaPose"],
+    "expected_keywords": ["无监督|unsupervised", "弱监督|weakly"]
+  },
+  {
+    "id": 4,
+    "question": "AM-FM 是一个什么类型的模型？",
+    "expected_sources": ["AM-FM"],
+    "expected_keywords": ["基础模型|foundation model", "环境智能|ambient", "WiFi"]
+  },
+  {
+    "id": 5,
+    "question": "AM-FM 模型中的 adapter（适配器）是如何设计的？",
+    "expected_sources": ["AM-FM"],
+    "expected_keywords": ["adapter|适配器", "dropout|Dropout"]
+  },
+  {
+    "id": 6,
+    "question": "C-MambaPose 使用了什么网络结构？",
+    "expected_sources": ["C-MambaPose"],
+    "expected_keywords": ["Mamba", "物理信息|physics-informed", "姿态|pose"]
+  },
+  {
+    "id": 7,
+    "question": "C-MambaPose 针对什么问题做跨环境泛化？",
+    "expected_sources": ["C-MambaPose"],
+    "expected_keywords": ["跨环境|cross-environment", "姿态|pose", "WiFi"]
+  },
+  {
+    "id": 8,
+    "question": "这份资料一共综述了多少篇 WiFi-CSI 感知相关论文？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["31"]
+  },
+  {
+    "id": 9,
+    "question": "在不要求人携带任何设备的情况下，仅利用已有的 WiFi 信号就能推断出人体的身体姿势吗？相关工作是怎么做的？",
+    "expected_sources": ["AdaPose"],
+    "expected_keywords": ["无设备|device-free", "姿态估计|姿势|pose", "WiFi"]
+  },
+  {
+    "id": 10,
+    "question": "LangChain 框架可以用来做什么？",
+    "answerable": false
+  },
+  {
+    "id": 11,
+    "question": "如何用 C 语言实现一个 Linux 内核模块？",
+    "answerable": false
+  },
+  {
+    "id": 12,
+    "question": "2024 年美国总统大选的结果是什么？",
+    "answerable": false
+  },
+  {
+    "id": 13,
+    "question": "AM-FM 的预训练数据规模有多大？",
+    "expected_sources": ["AM-FM"],
+    "expected_keywords": ["920万|9.2 million|9.2", "439", "20|二十"]
+  },
+  {
+    "id": 14,
+    "question": "AM-FM 为什么要强调隐私保护？",
+    "expected_sources": ["AM-FM"],
+    "expected_keywords": ["隐私|privacy", "摄像头|camera|视觉|visual"]
+  },
+  {
+    "id": 15,
+    "question": "C-MambaPose 是如何把 WiFi 信号序列映射到人体关节的？",
+    "expected_sources": ["C-MambaPose"],
+    "expected_keywords": ["cross-attention|交叉注意力|joint-query", "GCN|图卷积|Graph Convolutional", "关节|joint"]
+  },
+  {
+    "id": 16,
+    "question": "C-MambaPose 为什么强调利用 CSI 的相位信息？",
+    "expected_sources": ["C-MambaPose"],
+    "expected_keywords": ["相位|phase", "物理|physics"]
+  },
+  {
+    "id": 17,
+    "question": "SenseFi 基准库给出了什么工程选型结论？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["CNN|GRU", "性价比|不一定|盲目"]
+  },
+  {
+    "id": 18,
+    "question": "PerceptAlign 是怎么处理天线布局变化的？效果提升多少？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["天线|antenna", "60"]
+  },
+  {
+    "id": 19,
+    "question": "SDy-CNN 适合部署在什么样的设备上？为什么？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["边缘|edge|低算力", "去噪|denois|抗噪", "快|推理速度"]
+  },
+  {
+    "id": 20,
+    "question": "CRMD 是一种什么工具，用在哪些信号上？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["模态分解|mode decomposition", "复数|complex", "WiFi|雷达|radar"]
+  },
+  {
+    "id": 21,
+    "question": "部署了一个新模型到陌生房间后精度大幅下降，资料里有哪些工作专门解决这类环境变化问题？",
+    "expected_sources": ["AdaPose", "C-MambaPose"],
+    "expected_keywords": ["域偏移|domain shift|跨环境|cross-environment|跨站点|cross-site", "泛化|generaliz|适应|adapt"]
+  },
+  {
+    "id": 22,
+    "question": "和摄像头方案相比，用 WiFi 做人体感知在隐私方面有什么好处？",
+    "expected_sources": ["AM-FM"],
+    "expected_keywords": ["隐私|privacy"]
+  },
+  {
+    "id": 23,
+    "question": "知识图谱里提到的分类体系中，最底层的信号处理方向解决什么问题？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["信号|signal", "数据|data", "地基|底层|底层问题"]
+  },
+  {
+    "id": 24,
+    "question": "DeepSeek-V3 的总参数量是多少？",
+    "answerable": false
+  },
+  {
+    "id": 25,
+    "question": "下一届 IEEE GLOBECOM 会议在哪里举办？",
+    "answerable": false
+  },
+  {
+    "id": 26,
+    "question": "WiFi-JEPA 采用了什么样的学习范式？",
+    "expected_sources": ["WiFi-JEPA"],
+    "expected_keywords": ["自监督|self-supervised", "姿态|pose", "CSI"]
+  },
+  {
+    "id": 27,
+    "question": "CSI-Bench 是一个什么样的数据集？",
+    "expected_sources": ["CSI-Bench"],
+    "expected_keywords": ["大规模|large-scale", "多任务|multi-task", "真实环境|in-the-wild|真实世界"]
+  },
+  {
+    "id": 28,
+    "question": "ESPARGOS 数据集最显著的特点是什么？",
+    "expected_sources": ["ESPARGOS"],
+    "expected_keywords": ["相位相干|phase-coherent", "数据集|dataset|CSI"]
+  },
+  {
+    "id": 29,
+    "question": "Domino 主要补偿 WiFi 感知中的什么问题？基于什么思路？",
+    "expected_sources": ["Domino"],
+    "expected_keywords": ["硬件损伤|硬件噪声|硬件导致|硬件缺陷|hardware impairment|hardware-induced", "主导路径|dominant path"]
+  },
+  {
+    "id": 30,
+    "question": "ComplexBeat 利用 CSI 估计人体的什么生理指标？",
+    "expected_sources": ["ComplexBeat"],
+    "expected_keywords": ["呼吸|breath"]
+  },
+  {
+    "id": 31,
+    "question": "WiFlow 为什么自称轻量级？它如何处理时空特征？",
+    "expected_sources": ["WiFlow"],
+    "expected_keywords": ["轻量|lightweight", "时空|spatio-temporal|spatiotemporal", "解耦|decoupl"]
+  },
+  {
+    "id": 32,
+    "question": "RePos 是如何分解姿态来适应陌生环境的？",
+    "expected_sources": ["RePos"],
+    "expected_keywords": ["相对|relative", "绝对|absolute", "分解|factoriz"]
+  },
+  {
+    "id": 33,
+    "question": "CRMD 是针对什么类型信号的分解方法？",
+    "expected_sources": ["CRMD"],
+    "expected_keywords": ["复数|complex", "模态分解|mode decomposition", "WiFi|雷达|radar"]
+  },
+  {
+    "id": 34,
+    "question": "PerceptAlign 是如何缓解设备布局变化带来的影响的？误差下降多少？",
+    "expected_sources": ["31篇"],
+    "expected_keywords": ["天线|antenna", "60", "物理位置"]
+  },
+  {
+    "id": 35,
+    "question": "不使用摄像头，仅凭房间里现成的路由器无线信号，能否还原出人体表面的稠密姿态？相关研究叫什么？",
+    "expected_sources": ["DensePose"],
+    "expected_keywords": ["DensePose", "WiFi", "姿态|pose"]
+  },
+  {
+    "id": 36,
+    "question": "GPT-4 在 MMLU 基准上的具体得分是多少？",
+    "answerable": false
+  }
+]

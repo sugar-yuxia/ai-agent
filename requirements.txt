@@ -1,0 +1,28 @@
+# LangChain 全家桶（已测试通过的版本下限）
+langchain-core>=1.6.3
+langchain-community>=0.4.2
+langchain-huggingface>=1.2.2
+langchain-deepseek>=1.1.0
+langchain-classic>=1.0.8
+langchain-text-splitters>=1.1.2
+
+# 向量库与重排
+faiss-cpu>=1.15.1
+sentence-transformers>=6.0.1
+
+# Web 服务
+gradio>=6.27.0
+fastapi>=0.141.1
+uvicorn>=0.53.0
+pydantic>=2.13.4
+
+# 文档解析
+pypdf>=6.19.0
+docx2txt>=0.9
+
+# 评测可视化
+matplotlib>=3.8.4
+numpy>=1.26.4
+
+# 环境变量引导
+python-dotenv>=0.21.0

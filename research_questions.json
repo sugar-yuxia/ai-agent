@@ -1,0 +1,32 @@
+[
+  {
+    "id": "R1",
+    "question": "请系统调研 WiFi 人体姿态估计从单环境走向跨环境、跨设备部署的代表性工作，它们分别解决什么问题？",
+    "expected_sources": ["AdaPose", "RePos", "C-MambaPose", "PerceptAlign", "AM-FM"]
+  },
+  {
+    "id": "R2",
+    "question": "WiFi 感知在人体生理信号监测和活动识别方向有哪些代表性研究？",
+    "expected_sources": ["ComplexBeat", "SenseFi", "SDy"]
+  },
+  {
+    "id": "R3",
+    "question": "面向 WiFi 感知的大规模数据集与标准化评测基准目前有哪些？各自特点是什么？",
+    "expected_sources": ["CSI-Bench", "ESPARGOS", "SenseFi"]
+  },
+  {
+    "id": "R4",
+    "question": "在 CSI 信号处理与商用 WiFi 硬件损伤补偿方向，文献中有哪些方法？",
+    "expected_sources": ["Domino", "CRMD"]
+  },
+  {
+    "id": "R5",
+    "question": "无设备人体姿态估计中，结合语义信息或自监督学习的研究有哪些进展？",
+    "expected_sources": ["WiFi-JEPA", "DensePose", "AdaPose"]
+  },
+  {
+    "id": "R6",
+    "question": "面向边缘部署的轻量级 WiFi 感知模型设计有哪些工作？",
+    "expected_sources": ["WiFlow"]
+  }
+]
