@@ -168,6 +168,18 @@ CUSTOM_CSS = """
     word-break: break-word;
 }
 .proc-lat { color: #a855f7; font-size: 11px; font-weight: 600; }
+/* 调研过程滚动区（限高，内部滚动，参考来源始终可见） */
+.proc-scroll {
+    max-height: 52vh;
+    overflow-y: auto;
+    padding-right: 6px;
+    margin-top: 6px;
+}
+.proc-scroll::-webkit-scrollbar { width: 6px; }
+.proc-scroll::-webkit-scrollbar-thumb {
+    background: #d8b4fe; border-radius: 3px;
+}
+.proc-scroll::-webkit-scrollbar-track { background: #f5f3ff; border-radius: 3px; }
 """
 
 
@@ -192,7 +204,8 @@ def right_panel_html(proc: list[str], sources: list[dict]) -> str:
     parts = []
     if proc:
         parts.append('<div class="sources-panel"><h3>🧠 调研过程</h3>'
-                     + "".join(proc) + "</div>")
+                     '<div class="proc-scroll">'
+                     + "".join(proc) + "</div></div>")
     parts.append(sources_panel_html(sources))
     return "".join(parts)
 
