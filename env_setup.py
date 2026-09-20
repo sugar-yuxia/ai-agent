@@ -44,3 +44,11 @@ if not _deepseek_key:
 
 os.environ.setdefault("OPENAI_API_KEY", _deepseek_key)
 os.environ.setdefault("OPENAI_BASE_URL", "https://api.deepseek.com/v1")
+
+# arXiv 代理：.env 里设 ARXIV_PROXY 后自动转成 HTTP(S)_PROXY，
+# urllib.request.urlopen 会自动走代理，无需修改 _tool_arxiv 代码。
+_arxiv_proxy = os.environ.get("ARXIV_PROXY")
+if _arxiv_proxy:
+    os.environ.setdefault("HTTP_PROXY", _arxiv_proxy)
+    os.environ.setdefault("HTTPS_PROXY", _arxiv_proxy)
+    sys.stderr.write(f"📡 arxiv_search 将通过代理访问：{_arxiv_proxy}\n")

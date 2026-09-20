@@ -6,7 +6,7 @@
 2. Agent 循环：思考 → 工具调用 → 观察 → 再决策，模型自主决定用哪个工具、何时收尾
 3. 多工具 + Function Calling：
    - retrieve      ：本地文献库混合检索（BM25+向量 RRF）
-   - arxiv_search  ：arXiv 公开 API，补充本地库之外的公开论文（联网能力）
+   - scholar_search  ：Semantic Scholar 公开 API，补充本地库之外的公开论文（联网能力）
    - python_exec   ：子进程执行 Python 代码，做统计/计算（可验证计算能力）
    - finish        ：收尾信号，最终报告始终基于证据原文合成（防幻觉）
    工具 schema 经 bind_tools 下发，模型走原生 tool_calls 协议，不再靠正则解析 JSON
@@ -38,7 +38,7 @@ import hashlib
 import subprocess
 import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
+import urllib.error
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 
@@ -56,8 +56,8 @@ class RetrieveArgs(BaseModel):
     query: str = Field(..., description="具体的中文检索问题，面向本地文献库")
 
 
-class ArxivArgs(BaseModel):
-    """arXiv 公开论文检索参数"""
+class ScholarArgs(BaseModel):
+    """Semantic Scholar 公开论文检索参数"""
     query: str = Field(..., description="学术检索词，建议用英文关键词以获得更好召回")
 
 
@@ -77,9 +77,9 @@ def _retrieve_schema(query: str) -> str:  # pragma: no cover - 仅提供 schema
     raise NotImplementedError
 
 
-@tool("arxiv_search", args_schema=ArxivArgs)
-def _arxiv_schema(query: str) -> str:  # pragma: no cover - 仅提供 schema
-    """在 arXiv 公开库中搜索论文（标题+摘要），用于补充本地文献库没有的内容。"""
+@tool("scholar_search", args_schema=ScholarArgs)
+def _scholar_schema(query: str) -> str:  # pragma: no cover - 仅提供 schema
+    """在 Semantic Scholar 公开库中搜索论文（标题+摘要），用于补充本地文献库没有的内容。"""
     raise NotImplementedError
 
 
@@ -115,7 +115,7 @@ ACTION_PROMPT = """你正在通过调用工具完成学术文献调研。当前�
 
 规则：
 1. 先在 content 中用一两句话简述思考，然后调用恰好一个工具
-2. retrieve 查本地文献库；arxiv_search 补充本地库没有的公开论文（建议英文关键词）；
+2. retrieve 查本地文献库；scholar_search 补充本地库没有的公开论文（建议英文关键词）；
    python_exec 做计算/统计；证据已足够时调用 finish
 3. 每类工具有独立配额，耗尽后改用其他工具或 finish
 4. 检索类 query 要具体、彼此不同，覆盖不同子问题；不要同义改写重复检索
@@ -161,7 +161,7 @@ SYNTH_PROMPT = """你是严谨的学术文献调研助手。请基于【证据�
 @dataclass
 class Evidence:
     idx: int
-    source: str          # 本地文件名 / arXiv:<id> / python_exec
+    source: str          # 本地文件名 / Scholar:<id> / python_exec
     page: int | None
     content: str
     content_hash: str
@@ -189,7 +189,7 @@ class ResearchAgent:
     MAX_STEPS = 10             # 总循环步数上限（含被治理拦截的尝试）
     TOOL_QUOTAS = {            # 每类工具独立配额（被拦截的尝试不计数）
         "retrieve": 4,
-        "arxiv_search": 3,
+        "scholar_search": 3,
         "python_exec": 2,
     }
     RETRIEVE_TOP_K = 5         # 本地检索单次返回块数
@@ -202,7 +202,7 @@ class ResearchAgent:
     PY_TIMEOUT = 15            # python_exec 超时（秒）
     PY_OUTPUT_CAP = 1500       # python_exec 输出截断长度
 
-    ALL_TOOLS = ("retrieve", "arxiv_search", "python_exec")
+    ALL_TOOLS = ("retrieve", "scholar_search", "python_exec")
 
     def __init__(self, engine, trace_dir: str = str(RUNS_DIR),
                  tools: list[str] | None = None):
@@ -231,27 +231,42 @@ class ResearchAgent:
             "content": d.page_content,
         } for d in docs]
 
-    def _tool_arxiv(self, query: str) -> list[dict]:
-        """arXiv 公开 API 检索（Atom XML）。网络失败由调用方捕获为错误观察。"""
-        url = ("http://export.arxiv.org/api/query?"
-               f"search_query=all:{urllib.parse.quote(query)}"
-               f"&start=0&max_results=4&sortBy=relevance")
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "research-agent-demo/2.0"})
-        with urllib.request.urlopen(req, timeout=self.ARXIV_TIMEOUT) as r:
-            data = r.read()
-        ns = {"a": "http://www.w3.org/2005/Atom"}
-        root = ET.fromstring(data)
+    def _tool_scholar(self, query: str) -> list[dict]:
+        """Semantic Scholar 公开 API 检索（JSON）。网络失败由调用方捕获为错误观察。
+        国内可直连，无需代理；免费额度 1 req/s，对 demo 够用。
+        可选：设环境变量 S2_API_KEY 提升额度（https://www.semanticscholar.org/product/api）。"""
+        url = ("https://api.semanticscholar.org/graph/v1/paper/search?"
+               f"query={urllib.parse.quote(query)}"
+               "&limit=4"
+               "&fields=title,abstract,year,authors,externalIds,url")
+        headers = {"User-Agent": "research-agent-demo/2.0"}
+        api_key = os.environ.get("S2_API_KEY")
+        if api_key:
+            headers["x-api-key"] = api_key
+        # 免费额度有限，429 时退避重试一次
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=self.ARXIV_TIMEOUT) as r:
+                    data = json.loads(r.read())
+                break
+            except urllib.error.HTTPError as e:
+                if e.code == 429 and attempt == 0:
+                    time.sleep(2)
+                    continue
+                raise
         out = []
-        for entry in root.findall("a:entry", ns):
-            title = (entry.findtext("a:title", "", ns) or "").strip()
-            summary = (entry.findtext("a:summary", "", ns) or "").strip()
-            link = (entry.findtext("a:id", "", ns) or "").strip()
-            aid = link.rsplit("/abs/", 1)[-1] or link
+        for p in data.get("data", []) or []:
+            title = (p.get("title") or "").strip()
+            abstract = (p.get("abstract") or "").strip()
+            pid = p.get("externalIds", {}).get("ArXiv") or p.get("paperId", "")[:8]
+            year = p.get("year") or ""
+            authors = ", ".join(
+                a.get("name", "") for a in (p.get("authors") or [])[:3])
             out.append({
-                "source": f"arXiv:{aid}",
+                "source": f"Scholar:{pid}",
                 "page": None,
-                "content": f"{title}\n{summary}"[:900],
+                "content": f"{title} ({year}, {authors})\n{abstract}"[:900],
             })
         return out
 
@@ -323,7 +338,7 @@ class ResearchAgent:
     def _tools_text(self, active: list[str], quotas_left: dict[str, int]) -> str:
         desc = {
             "retrieve": "本地文献库检索，参数 {{\"query\": \"中文检索问题\"}}",
-            "arxiv_search": "arXiv 公开论文检索，参数 {{\"query\": \"检索词（建议英文）\"}}",
+            "scholar_search": "Semantic Scholar 公开论文检索，参数 {{\"query\": \"检索词（建议英文）\"}}",
             "python_exec": "执行 Python 代码，参数 {{\"code\": \"代码\"}}",
             "finish": "证据已足够时收尾，参数 {{\"answer\": \"可留空\"}}",
         }
@@ -375,7 +390,7 @@ class ResearchAgent:
         """启用工具的 schema 列表（finish 恒可用）。"""
         spec_map = {
             "retrieve": _retrieve_schema,
-            "arxiv_search": _arxiv_schema,
+            "scholar_search": _scholar_schema,
             "python_exec": _python_schema,
         }
         return [spec_map[t] for t in active] + [_finish_schema]
@@ -479,7 +494,7 @@ class ResearchAgent:
             # ---- 参数校验 ----
             query = str(args.get("query", "")).strip()
             code = str(args.get("code", "")).strip()
-            if name in ("retrieve", "arxiv_search") and not query:
+            if name in ("retrieve", "scholar_search") and not query:
                 obs = f"错误：{name} 缺少非空 query 参数。"
                 trace.append(TraceStep(
                     step, thought, name, args, obs, rejected=True))
@@ -495,7 +510,7 @@ class ResearchAgent:
                 continue
 
             # ---- 重复调用拦截（检索类按相似度，python 按代码哈希）----
-            if name in ("retrieve", "arxiv_search"):
+            if name in ("retrieve", "scholar_search"):
                 if self._is_duplicate_query(query, query_history[name]):
                     pending = "；".join(todo[:3]) if todo else "（无）"
                     obs = (f"已对「{query}」做过高度相似检索，禁止同义改写重试。"
@@ -527,9 +542,9 @@ class ResearchAgent:
                 items = self._tool_retrieve(query)
                 obs = (f"命中 {len(items)} 块"
                        + (f"，首块来自 {items[0]['source']}" if items else ""))
-            elif name == "arxiv_search":
+            elif name == "scholar_search":
                 try:
-                    items = self._tool_arxiv(query)
+                    items = self._tool_scholar(query)
                     obs = (f"arXiv 命中 {len(items)} 篇："
                            + "；".join(i["source"] for i in items[:3])
                            + ("…" if len(items) > 3 else ""))
@@ -554,7 +569,7 @@ class ResearchAgent:
             if not failed:
                 tool_counts[name] += 1
                 consecutive_fail[name] = 0
-                if name in ("retrieve", "arxiv_search"):
+                if name in ("retrieve", "scholar_search"):
                     query_history[name].append(query)
             else:
                 # 熔断器：连续失败达阈值 → 本轮停用该工具，避免模型反复撞墙

@@ -37,7 +37,7 @@
   │                                   │                  │
   │  可用工具：                        │                  │
   │  ├─ retrieve       本地文献库检索 │                  │
-  │  ├─ arxiv_search   arXiv 公开论文 │  ← 治理层       │
+  │  ├─ scholar_search  Semantic Scholar 公开论文 │  ← 治理层       │
   │  ├─ python_exec    代码执行/计算 │  ├─ 配额限制     │
   │  └─ finish         收尾信号       │  ├─ 重复拦截     │
   │                                   │  ├─ 熔断器       │
@@ -82,7 +82,7 @@
 
 ### 3. 为什么用熔断器？
 
-trace 显示 arXiv 在国内网络不可达时，每次 `URLError` 耗 40s（IPv6/IPv4 双栈超时）。模型会连续尝试 5 次浪费 200s。熔断器（连续失败 2 次即本轮停用）把 research 总耗时从 269s 降到 75s，且让模型自动转向其他工具。
+trace 显示工具不可达时，每次失败耗数十秒。熔断器（连续失败 2 次即本轮停用）把 research 总耗时从 269s 降到 75s，且让模型自动转向其他工具。scholar_search 改用 Semantic Scholar API（国内可直连）替代原 arXiv。
 
 ### 4. Function Calling vs 正则 JSON 解析
 
@@ -234,7 +234,7 @@ ai-agent/
 ## 注意事项
 
 - **内存需求**：评测脚本（eval_rag.py / eval_agent.py）约需 2.4GB 内存，建议关闭其他占用内存的程序后运行
-- **arXiv 网络**：国内网络可能无法直连 `export.arxiv.org`，熔断器会自动停用该工具。配 `HTTP_PROXY` 环境变量可恢复
+- **scholar_search 限流**：Semantic Scholar 免费 API 每秒 1 次，限流时自动退避重试。如需更高额度可在 `.env` 设 `S2_API_KEY`（免费申请）
 - **首次启动**：HuggingFace 模型已缓存到 `models/` 目录，离线加载；`HF_ONLINE=1` 可强制联网检查更新
 
 ---

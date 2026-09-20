@@ -121,31 +121,30 @@ class TestQueryDedup:
 
 
 class TestCircuitBreaker:
-    """arxiv_search 连续失败 2 次 → 第 3 次被熔断拦截。"""
+    """scholar_search 连续失败 2 次 → 第 3 次被熔断拦截。"""
 
-    def test_arxiv_circuit_breaker(self):
-        # _tool_arxiv 抛 URLError 模拟网络不通
-        with patch.object(ResearchAgent, "_tool_arxiv",
+    def test_scholar_circuit_breaker(self):
+        # _tool_scholar 抛 URLError 模拟网络不通
+        with patch.object(ResearchAgent, "_tool_scholar",
                           side_effect=urllib.error.URLError("unreachable")):
             agent = ResearchAgent(
                 _make_engine(), trace_dir=tempfile.mkdtemp(),
-                tools=["retrieve", "arxiv_search"])
-            # 3 次 arxiv（前 2 次触发熔断）→ finish
+                tools=["retrieve", "scholar_search"])
+            # 3 次 scholar（前 2 次触发熔断）→ finish
             decisions = [
-                ("arxiv_search", {"query": "q1"}),
-                ("arxiv_search", {"query": "q2"}),
-                ("arxiv_search", {"query": "q3"}),  # 应该被熔断拦截
+                ("scholar_search", {"query": "q1"}),
+                ("scholar_search", {"query": "q2"}),
+                ("scholar_search", {"query": "q3"}),  # 应该被熔断拦截
                 ("finish", {}),
             ]
             final = _run_with_decisions(agent, decisions)
 
-        arxiv_steps = [s for s in final["trace"]
-                       if s["action"] == "arxiv_search"]
-        assert len(arxiv_steps) == 3
+        scholar_steps = [s for s in final["trace"]
+                         if s["action"] == "scholar_search"]
+        assert len(scholar_steps) == 3
         # 前 2 次执行了（但 failed=True 所以没计配额），第 3 次被熔断拦截
-        # 注：前 2 次 rejected=False（执行了但工具失败），第 3 次 rejected=True
-        executed = [s for s in arxiv_steps if not s["rejected"]]
-        stopped = [s for s in arxiv_steps if s["rejected"]]
+        executed = [s for s in scholar_steps if not s["rejected"]]
+        stopped = [s for s in scholar_steps if s["rejected"]]
         assert len(executed) == 2
         assert len(stopped) == 1
         assert "熔断" in stopped[0]["obs_summary"] or \
