@@ -165,7 +165,7 @@ python check_docs.py
 python plot_eval.py
 
 # 命令行调试
-python ai.py
+python cli.py
 ```
 
 ---
@@ -177,7 +177,7 @@ ai-agent/
 ├── app.py               # Web 服务（FastAPI + Gradio，双模式）
 ├── rag_core.py          # RAG 引擎（混合检索 + 重排 + 多轮改写）
 ├── research_agent.py    # 多工具 ReAct Agent（function calling + 治理）
-├── ai.py                # 命令行 demo
+├── cli.py               # 命令行 demo
 ├── check_docs.py        # 文档完整性预检查
 ├── eval_rag.py          # RAG 管线评测
 ├── eval_agent.py        # Agent 评测
