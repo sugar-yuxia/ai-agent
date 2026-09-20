@@ -243,7 +243,7 @@ class ResearchAgent:
         api_key = os.environ.get("S2_API_KEY")
         if api_key:
             headers["x-api-key"] = api_key
-        # 免费额度有限，429 时退避重试一次
+        # 免费额度有限，429 时退避重试一次；仍失败则抛出由熔断器处理
         for attempt in range(2):
             try:
                 req = urllib.request.Request(url, headers=headers)
@@ -252,8 +252,12 @@ class ResearchAgent:
                 break
             except urllib.error.HTTPError as e:
                 if e.code == 429 and attempt == 0:
-                    time.sleep(2)
+                    time.sleep(5)  # 匿名限流 1 req/s；无 Retry-After，等 5s 试一次
                     continue
+                if e.code == 429:
+                    raise RuntimeError(
+                        "Semantic Scholar 限流(429)，匿名额度可能已被出口IP耗尽；"
+                        "可在 .env 配置 S2_API_KEY（免费申请）提升额度") from e
                 raise
         out = []
         for p in data.get("data", []) or []:
@@ -545,14 +549,14 @@ class ResearchAgent:
             elif name == "scholar_search":
                 try:
                     items = self._tool_scholar(query)
-                    obs = (f"arXiv 命中 {len(items)} 篇："
+                    obs = (f"Semantic Scholar 命中 {len(items)} 篇："
                            + "；".join(i["source"] for i in items[:3])
                            + ("…" if len(items) > 3 else ""))
                     if not items:
-                        obs = "arXiv 未命中任何论文，请换关键词或改用其他工具。"
+                        obs = "Semantic Scholar 未命中任何论文，请换关键词或改用其他工具。"
                 except Exception as exc:
                     items, failed = [], True
-                    obs = (f"arXiv 检索失败：{type(exc).__name__}。"
+                    obs = (f"Scholar 检索失败：{type(exc).__name__}。"
                            f"该方向暂不可用，请改用 retrieve 或转向其他子问题。"
                            f"（本次不计配额）")
             else:  # python_exec
